@@ -7,6 +7,8 @@ import Me from './components/Me.jsx';
 import { useStored, DEFAULT_PROFILE, DEFAULT_HISTORY } from './lib/store.js';
 import { audioContext, unlockAudio, stop } from './lib/snippet.js';
 import * as spotify from './lib/spotify.js';
+import InstallCard from './components/InstallCard.jsx';
+import { isMobile, isStandalone } from './lib/install.js';
 
 const TABS = [
   { id: 'discover', label: 'Discover', icon: '🔥' },
@@ -21,6 +23,7 @@ export default function App() {
   const [tab, setTab] = useState(() => (new URLSearchParams(location.search).get('room') ? 'blend' : 'discover'));
   const [toasts, setToasts] = useState([]);
   const [needsTap, setNeedsTap] = useState(true);
+  const [installDismissed, setInstallDismissed] = useStored('installDismissed', false);
 
   const toast = useCallback((text) => {
     const id = Math.random();
@@ -67,6 +70,7 @@ export default function App() {
       </header>
 
       <main className="main">
+        {!installDismissed && isMobile() && !isStandalone() && tab === 'likes' && <InstallCard compact onDismiss={() => setInstallDismissed(true)} />}
         {needsTap && tab !== 'me' && tab !== 'likes' ? (
           <div className="gate">
             <div className="gate__emoji">{profile.emoji}</div>

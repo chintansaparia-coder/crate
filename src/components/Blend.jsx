@@ -5,6 +5,7 @@ import { compatibility } from '../lib/personality.js';
 import { exportPlaylist } from '../lib/sync.js';
 import { isConnected } from '../lib/spotify.js';
 import { stop, playBestBit } from '../lib/snippet.js';
+import { buzz } from '../lib/install.js';
 
 const REACTIONS = ['🔥', '😍', '💀', '🕺', '😴', '🤯'];
 
@@ -104,6 +105,7 @@ function Room({ code, room, events, send, profile, leave, toast }) {
       setFloaters((x) => [...x, f]);
       setTimeout(() => setFloaters((x) => x.filter((y) => y.id !== f.id)), 2200);
     } else if (ev.t === 'match') {
+      buzz([30, 60, 30, 60, 30]);
       toast(`💞 It's a match! "${ev.track.title}"`);
     }
   }, [events, toast]);
@@ -117,7 +119,7 @@ function Room({ code, room, events, send, profile, leave, toast }) {
   const isHost = room.hostId === profile.id;
   const shareUrl = `${location.origin}/?room=${code}`;
 
-  const vote = (v) => { if (!room.current || myVote) return; stop(); send({ t: 'vote', trackId: room.current.id, vote: v }); };
+  const vote = (v) => { if (!room.current || myVote) return; stop(); buzz(12); send({ t: 'vote', trackId: room.current.id, vote: v }); };
 
   const doExport = async () => {
     setExporting(true);

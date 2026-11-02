@@ -4,6 +4,7 @@ import { api, tasteFor, useStored, DEFAULT_PROFILE, DEFAULT_HISTORY } from '../l
 import { analyse, stop, playBestBit } from '../lib/snippet.js';
 import { syncLike, unsyncLike } from '../lib/sync.js';
 import { isConnected } from '../lib/spotify.js';
+import { buzz } from '../lib/install.js';
 
 const DIALS = [
   { label: 'Comfort zone', value: 0.15 },
@@ -56,6 +57,7 @@ export default function Discover({ toast }) {
     const top = deck[0];
     if (!top || exit) return;
     stop();
+    buzz(dir === 'super' ? [10, 40, 10] : 12);
     setExit({ id: top.id, dir });
     setTimeout(() => {
       setExit(null);

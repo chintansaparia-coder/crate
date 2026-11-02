@@ -3,6 +3,7 @@ import { ArtistPicker, GenrePicker, Slider, PersonalityCard, VIBES } from './Pic
 import { useStored, DEFAULT_PROFILE, DEFAULT_HISTORY, load } from '../lib/store.js';
 import { tasteStats, archetypeFor } from '../lib/personality.js';
 import * as spotify from '../lib/spotify.js';
+import InstallCard from './InstallCard.jsx';
 
 export default function Me({ toast }) {
   const [profile, setProfile] = useStored('profile', DEFAULT_PROFILE);
@@ -42,6 +43,11 @@ export default function Me({ toast }) {
           </>)}
         </div>
       </div>
+
+      <section className="panel">
+        <h3>Use it on your phone</h3>
+        <InstallCard />
+      </section>
 
       <section className="panel">
         <h3>Spotify</h3>

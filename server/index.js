@@ -84,7 +84,12 @@ server.on('upgrade', (req, socket, head) => {
 
 if (isProd) {
   const dist = path.join(__dirname, '..', 'dist');
-  app.use(express.static(dist));
+  app.use(express.static(dist, {
+    setHeaders: (res, file) => {
+      if (/(sw\.js|manifest\.webmanifest|index\.html)$/.test(file)) res.set('Cache-Control', 'no-cache');
+      else if (file.includes(`${path.sep}assets${path.sep}`)) res.set('Cache-Control', 'public, max-age=31536000, immutable');
+    },
+  }));
   app.get('*', (_req, res) => res.sendFile(path.join(dist, 'index.html')));
 } else {
   const { createServer } = await import('vite');

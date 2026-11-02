@@ -35,6 +35,14 @@ One-time setup:
 
 Free-tier notes: the server sleeps after 15 minutes without traffic, so the first visit after that takes about 30–50s. Blend Rooms are kept in memory and reset when it sleeps or redeploys.
 
+## On your phone
+
+Crate is a Progressive Web App. Open your Render link on your phone and add it to the home screen. It then opens full-screen with its own icon, like a normal app:
+- **iPhone (Safari):** tap Share, then **Add to Home Screen**.
+- **Android (Chrome):** tap **Install** on the banner, or ⋮ → **Install app**.
+
+Phone-specific details: sound works even with the iPhone's silent switch on, audio resumes after you switch apps, swipes and matches vibrate on Android, and the layout fits small screens such as the iPhone SE.
+
 ## Connect Spotify
 
 1. Go to https://developer.spotify.com/dashboard and create an app. Choose the **Web API**.

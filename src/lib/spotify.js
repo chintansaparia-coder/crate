@@ -25,7 +25,7 @@ export async function login() {
   const verifier = b64url(crypto.getRandomValues(new Uint8Array(48)));
   const challenge = b64url(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier)));
   const state = b64url(crypto.getRandomValues(new Uint8Array(12)));
-  sessionStorage.setItem('crate.pkce', JSON.stringify({ verifier, state }));
+  save('pkce', { verifier, state, at: Date.now() });
   const params = new URLSearchParams({
     response_type: 'code', client_id: clientId, scope: SCOPES,
     redirect_uri: redirectUri(), code_challenge_method: 'S256', code_challenge: challenge, state,
@@ -55,12 +55,12 @@ async function tokenRequest(body) {
 export async function handleCallback() {
   if (window.location.pathname !== '/callback') return false;
   const params = new URLSearchParams(window.location.search);
-  const { verifier, state } = JSON.parse(sessionStorage.getItem('crate.pkce') || '{}');
+  const { verifier, state } = load('pkce', {});
   window.history.replaceState({}, '', '/');
   if (params.get('error')) throw new Error(`Spotify: ${params.get('error')}`);
   if (!params.get('code') || params.get('state') !== state) throw new Error('Spotify login state mismatch, please try again.');
   await tokenRequest({ grant_type: 'authorization_code', code: params.get('code'), redirect_uri: redirectUri(), code_verifier: verifier });
-  sessionStorage.removeItem('crate.pkce');
+  save('pkce', null);
   return true;
 }
 
