@@ -9,8 +9,9 @@ import { createRoomCode, handleSocket } from './rooms.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 5173);
-const HOST = process.env.HOST || '127.0.0.1';
 const isProd = process.env.NODE_ENV === 'production';
+// Hosts like Render need 0.0.0.0; locally stay on 127.0.0.1 (Spotify requires that loopback address).
+const HOST = process.env.HOST || (isProd ? '0.0.0.0' : '127.0.0.1');
 
 const app = express();
 app.use(express.json({ limit: '200kb' }));
@@ -67,6 +68,8 @@ app.get('/api/audio', async (req, res) => {
     res.status(502).end();
   }
 });
+
+app.get('/api/health', (_req, res) => res.json({ ok: true }));
 
 app.post('/api/rooms', (_req, res) => res.json({ code: createRoomCode() }));
 

@@ -24,6 +24,17 @@ Production: `npm run build && npm start`.
 
 Crate works without Spotify. Likes are stored on your device.
 
+## Hosting (GitHub + Render)
+
+The code lives on GitHub. [Render](https://render.com) runs it, using the `render.yaml` blueprint, and **redeploys automatically on every push to `main`**. GitHub Actions (`.github/workflows/ci.yml`) builds the app and smoke-tests it on every push.
+
+One-time setup:
+1. Go to render.com and sign in with GitHub. Choose **New → Blueprint**, pick this repo, then **Apply**.
+2. Your app will be live at `https://crate-XXXX.onrender.com` (Render shows the exact URL).
+3. Spotify: add `https://<your-render-url>/callback` as a Redirect URI in your Spotify app. Then either paste the Client ID in the app (Me → Spotify), or set `VITE_SPOTIFY_CLIENT_ID` in Render → Environment and redeploy.
+
+Free-tier notes: the server sleeps after 15 minutes without traffic, so the first visit after that takes about 30–50s. Blend Rooms are kept in memory and reset when it sleeps or redeploys.
+
 ## Connect Spotify
 
 1. Go to https://developer.spotify.com/dashboard and create an app. Choose the **Web API**.

@@ -1,0 +1,21 @@
+# Render Blueprint: https://render.com/docs/blueprint-spec
+# Render builds and redeploys this automatically on every push to main.
+services:
+  - type: web
+    name: crate
+    runtime: node
+    plan: free
+    branch: main
+    autoDeploy: true
+    # --include=dev because Vite (a dev dependency) is needed to build the frontend
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "22"
+      # Optional: set your Spotify app's Client ID in the Render dashboard
+      - key: VITE_SPOTIFY_CLIENT_ID
+        sync: false
