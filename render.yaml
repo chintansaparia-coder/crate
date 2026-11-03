@@ -16,6 +16,6 @@ services:
         value: production
       - key: NODE_VERSION
         value: "22"
-      # Optional: set your Spotify app's Client ID in the Render dashboard
+      # Optional: overrides the Client ID built into src/lib/spotify.js
       - key: VITE_SPOTIFY_CLIENT_ID
         sync: false

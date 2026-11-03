@@ -13,7 +13,11 @@ const SCOPES = [
 ].join(' ');
 
 export const redirectUri = () => `${window.location.origin}/callback`;
-export const getClientId = () => load('spotifyClientId', '') || import.meta.env.VITE_SPOTIFY_CLIENT_ID || '';
+// Crate's Spotify app. A Client ID is public (it appears in every login URL), so it's fine in code.
+// Everyone logs in with their own Spotify account; this only identifies the app.
+export const BUILT_IN_CLIENT_ID = 'b3cc073deff1491cbfc2403eb1144140';
+export const getClientId = () => import.meta.env.VITE_SPOTIFY_CLIENT_ID || BUILT_IN_CLIENT_ID || load('spotifyClientId', '');
+export const hasBuiltInClientId = () => !!(import.meta.env.VITE_SPOTIFY_CLIENT_ID || BUILT_IN_CLIENT_ID);
 export const setClientId = (id) => save('spotifyClientId', id.trim());
 
 const b64url = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf)))

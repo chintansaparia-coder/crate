@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ArtistPicker, GenrePicker, Slider, VIBES, EMOJIS, PersonalityCard } from './Pickers.jsx';
-import { api, useStored, DEFAULT_PROFILE } from '../lib/store.js';
+import { api, useStored, load, save, DEFAULT_PROFILE } from '../lib/store.js';
 import * as spotify from '../lib/spotify.js';
 import { unlockAudio } from '../lib/snippet.js';
 import { TransferReceive } from './Transfer.jsx';
@@ -9,7 +9,9 @@ const STEPS = ['Hello', 'Artists', 'Genres', 'Vibe', 'Dealbreakers', 'You'];
 
 export default function Onboarding({ toast }) {
   const [profile, setProfile] = useStored('profile', DEFAULT_PROFILE);
-  const [step, setStep] = useState(0);
+  // Remember the step so returning from the Spotify login lands back here.
+  const [step, setStepState] = useState(() => load('onboardStep', 0));
+  const setStep = (n) => { setStepState(n); save('onboardStep', n); };
   const [importing, setImporting] = useState(false);
   const set = (patch) => setProfile((p) => ({ ...p, ...patch }));
 
@@ -37,6 +39,7 @@ export default function Onboarding({ toast }) {
 
   const finish = async () => {
     await unlockAudio().catch(() => {});
+    save('onboardStep', null);
     set({ onboarded: true });
   };
 
@@ -72,7 +75,9 @@ export default function Onboarding({ toast }) {
           <p className="lede">Pick a few artists you already like. We use them as a starting point and look for similar music you haven't heard.</p>
           {spotify.isConnected()
             ? <button className="btn btn--spotify" onClick={importSpotify} disabled={importing}>{importing ? 'Importing…' : 'Import my top Spotify artists'}</button>
-            : <p className="muted small">Tip: connect Spotify in Me later to import your top artists automatically.</p>}
+            : spotify.hasBuiltInClientId()
+              ? <button className="btn btn--spotify" onClick={() => spotify.login().catch((e) => toast(e.message))}>Connect Spotify to import my top artists</button>
+              : <p className="muted small">Tip: connect Spotify in Me later to import your top artists automatically.</p>}
           <ArtistPicker value={profile.seedArtists} onChange={(seedArtists) => set({ seedArtists })} />
         </section>
       )}

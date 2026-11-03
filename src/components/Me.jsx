@@ -68,20 +68,31 @@ export default function Me({ toast }) {
           </div>
         ) : (
           <>
-            <p className="small muted">
-              Create an app at developer.spotify.com/dashboard, add this exact Redirect URI, then paste the Client ID here.
-              Crate works without Spotify too. Likes are kept here on this device.
-            </p>
-            <div className="row copyrow">
-              <code className="code">{spotify.redirectUri()}</code>
-              <button className="btn btn--ghost btn--sm" onClick={() => navigator.clipboard?.writeText(spotify.redirectUri())
-                .then(() => toast('Redirect URI copied. Paste it into your Spotify app → Settings → Redirect URIs, then Save'))
-                .catch(() => toast('Copy failed. Select the address and copy it manually'))}>Copy</button>
-            </div>
-            <div className="row">
-              <input className="input" value={clientId} onChange={(e) => setClientIdState(e.target.value)} placeholder="Spotify Client ID" aria-label="Spotify Client ID" />
-              <button className="btn btn--spotify" onClick={() => { spotify.setClientId(clientId); spotify.login().catch((e) => toast(e.message)); }} disabled={!clientId.trim()}>Connect</button>
-            </div>
+            {spotify.hasBuiltInClientId() ? (
+              <>
+                <p className="small muted">Log in with your own Spotify account. Your likes go into a "Crate ♥ Swipes" playlist in your Spotify.</p>
+                <button className="btn btn--spotify" onClick={() => spotify.login().catch((e) => toast(e.message))}>Connect Spotify</button>
+                <p className="tiny muted">Getting an error after logging in? Ask the app owner to add your Spotify email under User Management in their Spotify developer dashboard.</p>
+              </>
+            ) : (
+              <>
+                <p className="small muted">Paste your Spotify app's Client ID. Crate works without Spotify too. Likes are kept here on this device.</p>
+                <div className="row">
+                  <input className="input" value={clientId} onChange={(e) => setClientIdState(e.target.value)} placeholder="Spotify Client ID" aria-label="Spotify Client ID" />
+                  <button className="btn btn--spotify" onClick={() => { spotify.setClientId(clientId); spotify.login().catch((e) => toast(e.message)); }} disabled={!clientId.trim()}>Connect</button>
+                </div>
+              </>
+            )}
+            <details className="already">
+              <summary>Developer settings</summary>
+              <p className="small muted">The Redirect URI that must be saved in the Spotify app's settings:</p>
+              <div className="row copyrow">
+                <code className="code">{spotify.redirectUri()}</code>
+                <button className="btn btn--ghost btn--sm" onClick={() => navigator.clipboard?.writeText(spotify.redirectUri())
+                  .then(() => toast('Redirect URI copied. Paste it into your Spotify app → Settings → Redirect URIs, then Save'))
+                  .catch(() => toast('Copy failed. Select the address and copy it manually'))}>Copy</button>
+              </div>
+            </details>
           </>
         )}
       </section>

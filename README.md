@@ -47,7 +47,7 @@ Phone-specific details: sound works even with the iPhone's silent switch on, aud
 
 There are no accounts: each profile is saved in the browser where it was made.
 - **Move your profile to another device:** on the old device go to **Me → Move this profile → Create a transfer code**. On the new device, enter the code on the welcome screen ("Already set up Crate on another device?") or under Me, or just open the link. A code works once and expires after 15 minutes. Spotify login is not copied; tap Connect on the new device.
-- **Friends:** send them your Render link (not a transfer code; those are for your own devices). Everyone logs in with their own Spotify account, and their likes go into a playlist in their own Spotify. Each person gets their own profile on their own phone. For Spotify, add each friend's Spotify email under your Spotify app's **User Management** (max 5 in Development Mode), and set `VITE_SPOTIFY_CLIENT_ID` in Render so nobody has to paste the Client ID.
+- **Friends:** send them your Render link (not a transfer code; those are for your own devices). Everyone logs in with their own Spotify account, and their likes go into a playlist in their own Spotify. Each person gets their own profile on their own phone. For Spotify, add each friend's Spotify email under your Spotify app's **User Management** (max 5 in Development Mode), The Client ID is built in (`src/lib/spotify.js`), so everyone just taps Connect.
 
 ## Connect Spotify
 
