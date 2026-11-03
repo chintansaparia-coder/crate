@@ -23,18 +23,45 @@ export const setClientId = (id) => save('spotifyClientId', id.trim());
 const b64url = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf)))
   .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 
-export async function login() {
+/**
+ * Log in with Spotify in a pop-up so Crate itself never navigates away.
+ * The pop-up's /callback page relays the code through our server (see server/authrelay.js),
+ * which works even when iOS opens it with separate storage. Resolves once connected.
+ * Falls back to a full-page redirect if pop-ups are blocked.
+ */
+export function login() {
   const clientId = getClientId();
-  if (!clientId) throw new Error('Add your Spotify Client ID in Me → Spotify first.');
-  const verifier = b64url(crypto.getRandomValues(new Uint8Array(48)));
-  const challenge = b64url(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier)));
-  const state = b64url(crypto.getRandomValues(new Uint8Array(12)));
-  save('pkce', { verifier, state, at: Date.now() });
-  const params = new URLSearchParams({
-    response_type: 'code', client_id: clientId, scope: SCOPES,
-    redirect_uri: redirectUri(), code_challenge_method: 'S256', code_challenge: challenge, state,
-  });
-  window.location.assign(`https://accounts.spotify.com/authorize?${params}`);
+  if (!clientId) return Promise.reject(new Error('Add your Spotify Client ID in Me → Spotify first.'));
+  // Must open synchronously inside the tap, before any await, or Safari blocks it.
+  const popup = window.open('', 'crate-spotify', 'popup,width=480,height=760');
+  return (async () => {
+    const verifier = b64url(crypto.getRandomValues(new Uint8Array(48)));
+    const challenge = b64url(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier)));
+    const state = b64url(crypto.getRandomValues(new Uint8Array(16)));
+    save('pkce', { verifier, state, mode: popup ? 'popup' : 'redirect', at: Date.now() });
+    const url = `https://accounts.spotify.com/authorize?${new URLSearchParams({
+      response_type: 'code', client_id: clientId, scope: SCOPES,
+      redirect_uri: redirectUri(), code_challenge_method: 'S256', code_challenge: challenge, state,
+    })}`;
+    if (!popup) { window.location.assign(url); return new Promise(() => {}); }
+    popup.location.href = url;
+
+    // Wait for the pop-up to relay the code (up to 10 minutes).
+    const deadline = Date.now() + 10 * 60 * 1000;
+    while (Date.now() < deadline) {
+      await new Promise((r) => setTimeout(r, 1500));
+      const res = await fetch(`/api/auth/relay/${state}`).catch(() => null);
+      if (!res || res.status === 204) continue;
+      const { code, error } = await res.json();
+      try { popup.close(); } catch { /* iOS may not allow it */ }
+      if (error) throw new Error(error === 'access_denied' ? 'Spotify login was cancelled' : `Spotify: ${error}`);
+      await tokenRequest({ grant_type: 'authorization_code', code, redirect_uri: redirectUri(), code_verifier: verifier });
+      save('pkce', null);
+      save('spotifyUser', null);
+      return me().catch(() => null);
+    }
+    throw new Error('Spotify login timed out. Please try again.');
+  })();
 }
 
 async function tokenRequest(body) {
@@ -55,17 +82,28 @@ async function tokenRequest(body) {
   return token;
 }
 
-/** Call once on boot. Returns true if we just finished logging in. */
+/**
+ * Runs on boot. On /callback it either finishes a full-page (redirect) login and
+ * returns 'connected', or relays the code to the waiting app and returns 'relayed'
+ * (this window is the login pop-up and should just say "go back to Crate").
+ */
 export async function handleCallback() {
-  if (window.location.pathname !== '/callback') return false;
+  if (window.location.pathname !== '/callback') return null;
   const params = new URLSearchParams(window.location.search);
-  const { verifier, state } = load('pkce', {});
+  const code = params.get('code'), error = params.get('error'), state = params.get('state');
   window.history.replaceState({}, '', '/');
-  if (params.get('error')) throw new Error(`Spotify: ${params.get('error')}`);
-  if (!params.get('code') || params.get('state') !== state) throw new Error('Spotify login state mismatch, please try again.');
-  await tokenRequest({ grant_type: 'authorization_code', code: params.get('code'), redirect_uri: redirectUri(), code_verifier: verifier });
-  save('pkce', null);
-  return true;
+  const pkce = load('pkce', {});
+  if (pkce.mode === 'redirect' && pkce.state === state) {
+    if (error) throw new Error(`Spotify: ${error}`);
+    await tokenRequest({ grant_type: 'authorization_code', code, redirect_uri: redirectUri(), code_verifier: pkce.verifier });
+    save('pkce', null);
+    return 'connected';
+  }
+  await fetch('/api/auth/relay', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ state, code, error }),
+  });
+  setTimeout(() => { try { window.close(); } catch { /* ignore */ } }, 600);
+  return 'relayed';
 }
 
 export const isConnected = () => !!load('spotifyToken', null)?.refresh;

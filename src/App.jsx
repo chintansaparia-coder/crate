@@ -32,14 +32,20 @@ export default function App() {
     setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 3200);
   }, []);
 
+  const [callback, setCallback] = useState(() => (window.location.pathname === '/callback' ? 'working' : null));
+  useStored('spotifyToken', null); // re-render when Spotify connects or disconnects
+
   useEffect(() => {
     spotify.handleCallback()
-      .then(async (done) => {
-        if (!done) return;
+      .then(async (result) => {
+        setCallback(result === 'relayed' ? 'relayed' : null);
+        if (result !== 'connected') return;
         const u = await spotify.me().catch(() => null);
         toast(`Connected to Spotify${u?.name ? ` as ${u.name}` : ''} 🎉`);
       })
-      .catch((e) => toast(e.message));
+      .catch((e) => { setCallback(null); toast(e.message); });
+    // Ask the browser not to clear Crate's saved data (helps on iPhone).
+    navigator.storage?.persist?.().catch(() => {});
   }, [toast]);
 
   // Opening a transfer link (…/?transfer=CODE) imports that profile.
@@ -60,6 +66,20 @@ export default function App() {
   // Browsers block audio until the first tap; show a one-time gate.
   useEffect(() => { if (audioContext().state === 'running') setNeedsTap(false); }, []);
   const start = async () => { await unlockAudio().catch(() => {}); setNeedsTap(false); };
+
+  // This window is the Spotify login pop-up: hand back to the app.
+  if (callback) {
+    return (
+      <div className="app"><div className="gate">
+        {callback === 'working' ? <><div className="spinner" /><p>Connecting to Spotify…</p></> : (<>
+          <div className="gate__emoji">✅</div>
+          <h2>Spotify connected</h2>
+          <p className="muted">You can close this window and go back to Crate.<br />On iPhone, tap <b>Done</b> (top left).</p>
+          <button className="btn" onClick={() => window.close()}>Close</button>
+        </>)}
+      </div></div>
+    );
+  }
 
   if (!profile.onboarded) {
     return <div className="app"><Onboarding toast={toast} /><Toasts toasts={toasts} /></div>;

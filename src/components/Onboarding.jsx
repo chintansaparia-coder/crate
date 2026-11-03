@@ -15,6 +15,11 @@ export default function Onboarding({ toast }) {
   const [importing, setImporting] = useState(false);
   const set = (patch) => setProfile((p) => ({ ...p, ...patch }));
 
+  useStored('spotifyToken', null); // re-render when Spotify connects
+  const connectAndImport = () => {
+    setImporting(true);
+    spotify.login().then(() => importSpotify()).catch((e) => { toast(e.message); setImporting(false); });
+  };
   const importSpotify = async () => {
     setImporting(true);
     try {
@@ -76,7 +81,7 @@ export default function Onboarding({ toast }) {
           {spotify.isConnected()
             ? <button className="btn btn--spotify" onClick={importSpotify} disabled={importing}>{importing ? 'Importing…' : 'Import my top Spotify artists'}</button>
             : spotify.hasBuiltInClientId()
-              ? <button className="btn btn--spotify" onClick={() => spotify.login().catch((e) => toast(e.message))}>Connect Spotify to import my top artists</button>
+              ? <button className="btn btn--spotify" onClick={connectAndImport} disabled={importing}>{importing ? 'Waiting for Spotify…' : 'Connect Spotify to import my top artists'}</button>
               : <p className="muted small">Tip: connect Spotify in Me later to import your top artists automatically.</p>}
           <ArtistPicker value={profile.seedArtists} onChange={(seedArtists) => set({ seedArtists })} />
         </section>

@@ -7,6 +7,7 @@ import { dz, slimTrack, pic } from './deezer.js';
 import { buildDeck } from './discovery.js';
 import { createRoomCode, handleSocket } from './rooms.js';
 import { createTransfer, takeTransfer } from './transfer.js';
+import { putAuth, takeAuth } from './authrelay.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 5173);
@@ -79,6 +80,17 @@ app.get('/api/audio', async (req, res) => {
   } catch (e) {
     res.status(502).end();
   }
+});
+
+app.post('/api/auth/relay', (req, res) => {
+  const { state, code, error } = req.body || {};
+  if (!putAuth(state, code, error)) return res.status(400).json({ error: 'bad state' });
+  res.json({ ok: true });
+});
+app.get('/api/auth/relay/:state', (req, res) => {
+  const e = takeAuth(req.params.state);
+  if (!e) return res.status(204).end(); // not there yet
+  res.json(e);
 });
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));

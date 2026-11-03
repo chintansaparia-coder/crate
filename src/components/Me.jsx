@@ -11,6 +11,7 @@ export default function Me({ toast }) {
   const [history, setHistory] = useStored('history', DEFAULT_HISTORY);
   const [clientId, setClientIdState] = useState(spotify.getClientId());
   const [, force] = useState(0);
+  useStored('spotifyToken', null); // re-render when Spotify connects
   const set = (patch) => setProfile((p) => ({ ...p, ...patch }));
   const stats = tasteStats(profile, history);
   const user = load('spotifyUser', null);
@@ -71,7 +72,7 @@ export default function Me({ toast }) {
             {spotify.hasBuiltInClientId() ? (
               <>
                 <p className="small muted">Log in with your own Spotify account. Your likes go into a "Crate ♥ Swipes" playlist in your Spotify.</p>
-                <button className="btn btn--spotify" onClick={() => spotify.login().catch((e) => toast(e.message))}>Connect Spotify</button>
+                <button className="btn btn--spotify" onClick={() => spotify.login().then((u) => toast(`Connected to Spotify${u?.name ? ` as ${u.name}` : ''} 🎉`)).catch((e) => toast(e.message))}>Connect Spotify</button>
                 <p className="tiny muted">Getting an error after logging in? Ask the app owner to add your Spotify email under User Management in their Spotify developer dashboard.</p>
               </>
             ) : (
@@ -79,7 +80,7 @@ export default function Me({ toast }) {
                 <p className="small muted">Paste your Spotify app's Client ID. Crate works without Spotify too. Likes are kept here on this device.</p>
                 <div className="row">
                   <input className="input" value={clientId} onChange={(e) => setClientIdState(e.target.value)} placeholder="Spotify Client ID" aria-label="Spotify Client ID" />
-                  <button className="btn btn--spotify" onClick={() => { spotify.setClientId(clientId); spotify.login().catch((e) => toast(e.message)); }} disabled={!clientId.trim()}>Connect</button>
+                  <button className="btn btn--spotify" onClick={() => { spotify.setClientId(clientId); spotify.login().then(() => toast('Connected to Spotify 🎉')).catch((e) => toast(e.message)); }} disabled={!clientId.trim()}>Connect</button>
                 </div>
               </>
             )}
