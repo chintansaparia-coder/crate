@@ -306,3 +306,6 @@ code, .code { font-family: ui-monospace, monospace; font-size: .85rem; backgroun
 .install--compact { margin: 0 auto 12px; max-width: 400px; padding-right: 36px; }
 .install__x { position: absolute; top: 6px; right: 6px; background: none; border: 0; font-size: 1.3rem; color: var(--muted); width: 28px; height: 28px; }
 .onboard { padding-top: calc(32px + env(safe-area-inset-top)); }
+
+.copyrow { flex-wrap: nowrap; margin: 8px 0 12px; }
+.copyrow .code { flex: 1; margin: 0; user-select: all; }

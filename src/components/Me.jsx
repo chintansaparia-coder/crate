@@ -62,7 +62,12 @@ export default function Me({ toast }) {
               Create an app at developer.spotify.com/dashboard, add this exact Redirect URI, then paste the Client ID here.
               Crate works without Spotify too. Likes are kept here on this device.
             </p>
-            <code className="code">{spotify.redirectUri()}</code>
+            <div className="row copyrow">
+              <code className="code">{spotify.redirectUri()}</code>
+              <button className="btn btn--ghost btn--sm" onClick={() => navigator.clipboard?.writeText(spotify.redirectUri())
+                .then(() => toast('Redirect URI copied. Paste it into your Spotify app → Settings → Redirect URIs, then Save'))
+                .catch(() => toast('Copy failed. Select the address and copy it manually'))}>Copy</button>
+            </div>
             <div className="row">
               <input className="input" value={clientId} onChange={(e) => setClientIdState(e.target.value)} placeholder="Spotify Client ID" aria-label="Spotify Client ID" />
               <button className="btn btn--spotify" onClick={() => { spotify.setClientId(clientId); spotify.login().catch((e) => toast(e.message)); }} disabled={!clientId.trim()}>Connect</button>
