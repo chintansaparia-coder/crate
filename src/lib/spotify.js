@@ -126,12 +126,20 @@ export async function createPlaylist(name, description) {
 }
 
 /** The main "Crate Likes" playlist, created on first use. */
+/** The main "Crate ♥ Swipes" playlist of whoever is logged in, created on first use.
+ *  Remembers its owner, so a different Spotify account on this device (or a profile
+ *  copied from someone else) gets its own playlist instead of writing into another person's. */
 export async function ensureLikesPlaylist() {
+  const user = await me();
   const existing = load('spotifyPlaylist', null);
-  if (existing) return existing;
+  if (existing && (!existing.owner || existing.owner === user.id)) {
+    if (!existing.owner) save('spotifyPlaylist', { ...existing, owner: user.id });
+    return existing;
+  }
   const p = await createPlaylist('Crate ♥ Swipes', 'Songs I swiped right on in Crate.');
-  save('spotifyPlaylist', p);
-  return p;
+  const saved = { ...p, owner: user.id };
+  save('spotifyPlaylist', saved);
+  return saved;
 }
 
 export async function addToPlaylist(playlistId, uris) {

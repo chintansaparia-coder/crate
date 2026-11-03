@@ -53,7 +53,7 @@ export default function Me({ toast }) {
       <section className="panel">
         <h3>Move this profile to another device</h3>
         <p className="small muted">Copies your personality, artists, settings and likes to your phone or another computer.
-          Your Spotify login stays here; just tap Connect on the new device.</p>
+          Your Spotify login stays here; just tap Connect on the new device. <b>Only for your own devices.</b> Friends should make their own profile from the welcome screen.</p>
         <TransferSend toast={toast} />
         <h4>Have a code from another device?</h4>
         <TransferReceive toast={toast} confirmOverwrite />
