@@ -4,6 +4,7 @@ import { useStored, DEFAULT_PROFILE, DEFAULT_HISTORY, load } from '../lib/store.
 import { tasteStats, archetypeFor } from '../lib/personality.js';
 import * as spotify from '../lib/spotify.js';
 import InstallCard from './InstallCard.jsx';
+import { TransferSend, TransferReceive } from './Transfer.jsx';
 
 export default function Me({ toast }) {
   const [profile, setProfile] = useStored('profile', DEFAULT_PROFILE);
@@ -47,6 +48,15 @@ export default function Me({ toast }) {
       <section className="panel">
         <h3>Use it on your phone</h3>
         <InstallCard />
+      </section>
+
+      <section className="panel">
+        <h3>Move this profile to another device</h3>
+        <p className="small muted">Copies your personality, artists, settings and likes to your phone or another computer.
+          Your Spotify login stays here; just tap Connect on the new device.</p>
+        <TransferSend toast={toast} />
+        <h4>Have a code from another device?</h4>
+        <TransferReceive toast={toast} confirmOverwrite />
       </section>
 
       <section className="panel">

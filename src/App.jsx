@@ -9,6 +9,7 @@ import { audioContext, unlockAudio, stop } from './lib/snippet.js';
 import * as spotify from './lib/spotify.js';
 import InstallCard from './components/InstallCard.jsx';
 import { isMobile, isStandalone } from './lib/install.js';
+import { importTransfer } from './lib/transfer.js';
 
 const TABS = [
   { id: 'discover', label: 'Discover', icon: '🔥' },
@@ -40,6 +41,19 @@ export default function App() {
       })
       .catch((e) => toast(e.message));
   }, [toast]);
+
+  // Opening a transfer link (…/?transfer=CODE) imports that profile.
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const code = url.searchParams.get('transfer');
+    if (!code) return;
+    url.searchParams.delete('transfer');
+    window.history.replaceState({}, '', url);
+    if (profile.onboarded && !confirm('Replace the profile and likes on this device with the ones from your other device?')) return;
+    importTransfer(code)
+      .then((p) => toast(`Welcome back${p?.name ? `, ${p.name}` : ''}! Connect Spotify under Me to keep syncing likes.`))
+      .catch((e) => toast(e.message));
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => { stop(); }, [tab]);
 

@@ -3,6 +3,7 @@ import { ArtistPicker, GenrePicker, Slider, VIBES, EMOJIS, PersonalityCard } fro
 import { api, useStored, DEFAULT_PROFILE } from '../lib/store.js';
 import * as spotify from '../lib/spotify.js';
 import { unlockAudio } from '../lib/snippet.js';
+import { TransferReceive } from './Transfer.jsx';
 
 const STEPS = ['Hello', 'Artists', 'Genres', 'Vibe', 'Dealbreakers', 'You'];
 
@@ -57,6 +58,11 @@ export default function Onboarding({ toast }) {
               <button key={e} className={profile.emoji === e ? 'on' : ''} onClick={() => set({ emoji: e })} aria-pressed={profile.emoji === e}>{e}</button>
             ))}</div>
           </div>
+          <details className="already">
+            <summary>Already set up Crate on another device?</summary>
+            <p className="small muted">On that device go to Me → Move this profile → Create a transfer code, then enter it here.</p>
+            <TransferReceive toast={toast} />
+          </details>
         </section>
       )}
 

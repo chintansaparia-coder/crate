@@ -309,3 +309,10 @@ code, .code { font-family: ui-monospace, monospace; font-size: .85rem; backgroun
 
 .copyrow { flex-wrap: nowrap; margin: 8px 0 12px; }
 .copyrow .code { flex: 1; margin: 0; user-select: all; }
+
+/* ---------- Profile transfer ---------- */
+.transfer__code { font-size: 2.2rem; font-weight: 700; letter-spacing: .25em; text-align: center; padding: 14px; background: var(--bg2); border-radius: 14px; margin-bottom: 8px; user-select: all; }
+.code-input--wide { max-width: 180px; }
+.already { margin-top: 28px; border-top: 1px solid var(--line); padding-top: 16px; }
+.already summary { cursor: pointer; color: var(--muted); }
+.already form { margin-top: 10px; }

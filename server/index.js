@@ -6,6 +6,7 @@ import { WebSocketServer } from 'ws';
 import { dz, slimTrack, pic } from './deezer.js';
 import { buildDeck } from './discovery.js';
 import { createRoomCode, handleSocket } from './rooms.js';
+import { createTransfer, takeTransfer } from './transfer.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 5173);
@@ -14,6 +15,17 @@ const isProd = process.env.NODE_ENV === 'production';
 const HOST = process.env.HOST || (isProd ? '0.0.0.0' : '127.0.0.1');
 
 const app = express();
+// Profile transfers carry your likes, so they get a bigger body limit than other routes.
+app.post('/api/transfer', express.json({ limit: '3mb' }), (req, res) => {
+  const { profile, history } = req.body || {};
+  if (!profile || !history) return res.status(400).json({ error: 'Nothing to transfer' });
+  res.json(createTransfer(req.body));
+});
+app.get('/api/transfer/:code', (req, res) => {
+  const data = takeTransfer(req.params.code);
+  if (!data) return res.status(404).json({ error: 'That code is wrong or has expired (codes last 15 minutes and work once).' });
+  res.json(data);
+});
 app.use(express.json({ limit: '200kb' }));
 
 const wrap = (fn) => (req, res) => fn(req, res).catch((e) => {

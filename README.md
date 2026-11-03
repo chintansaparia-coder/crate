@@ -43,6 +43,12 @@ Crate is a Progressive Web App. Open your Render link on your phone and add it t
 
 Phone-specific details: sound works even with the iPhone's silent switch on, audio resumes after you switch apps, swipes and matches vibrate on Android, and the layout fits small screens such as the iPhone SE.
 
+## Profiles, other devices and friends
+
+There are no accounts: each profile is saved in the browser where it was made.
+- **Move your profile to another device:** on the old device go to **Me → Move this profile → Create a transfer code**. On the new device, enter the code on the welcome screen ("Already set up Crate on another device?") or under Me, or just open the link. A code works once and expires after 15 minutes. Spotify login is not copied; tap Connect on the new device.
+- **Friends:** send them your Render link. Each person gets their own profile on their own phone. For Spotify, add each friend's Spotify email under your Spotify app's **User Management** (max 5 in Development Mode), and set `VITE_SPOTIFY_CLIENT_ID` in Render so nobody has to paste the Client ID.
+
 ## Connect Spotify
 
 1. Go to https://developer.spotify.com/dashboard and create an app. Choose the **Web API**.
